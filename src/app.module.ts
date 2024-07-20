@@ -1,4 +1,4 @@
-import { Module, OnModuleInit } from '@nestjs/common';
+import { Module, OnModuleInit, Logger } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -7,6 +7,7 @@ import { UsersModule } from './users/users.module';
 import { BlogsModule } from './blogs/blogs.module'
 import { UsersService } from './users/users.service';
 import { AuthModule } from './auth/auth.module';
+import { DataSource } from 'typeorm';
 
 
 @Module({
@@ -32,9 +33,26 @@ import { AuthModule } from './auth/auth.module';
   providers: [AppService],
 })
 export class AppModule implements OnModuleInit {
-  constructor(private readonly usersService: UsersService) { }
+  private readonly logger = new Logger(AppModule.name);
+
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly dataSource: DataSource,
+  ) { }
 
   async onModuleInit() {
-    await this.usersService.createSuperAdmin();
+    try {
+      await this.dataSource.query('SELECT 1');
+      this.logger.log('Database connection established successfully');
+    } catch (error) {
+      this.logger.error('Database connection failed', error);
+    }
+
+    try {
+      await this.usersService.createSuperAdmin();
+      this.logger.log('Super admin user created successfully');
+    } catch (error) {
+      this.logger.error('Failed to create super admin user', error);
+    }
   }
 }
