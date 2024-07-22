@@ -1,15 +1,17 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne } from 'typeorm';
+import { BlogCategory } from './blogs-categories.entity';
 
 @Entity()
 export class Blog {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
-  @Column()
+  @Column({ nullable: false })
   title: string;
 
-  @Column('text')
+  @Column('text', { nullable: false })
   content: string;
+
 
   @Column('simple-array', { nullable: true })
   tags: string[];
@@ -20,6 +22,13 @@ export class Blog {
   @Column()
   author: string;
 
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  @ManyToOne(() => BlogCategory, category => category.blogs, { nullable: true, onDelete: 'SET NULL' })
+  category: BlogCategory;
+
+
+  @Column({ name: 'created_at', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
+
+  @Column({ name: 'updated_at', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  updatedAt: Date;
 }
